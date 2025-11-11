@@ -1,11 +1,13 @@
 import { join } from 'node:path';
 import packageJson from '../package.json';
+import { getVersionConfig } from './version-config';
 
 /**
  * CLI options that users can set via command line arguments
  */
 interface CliOptions {
   docsHost?: boolean;
+  pfVersion?: string;
   // Future CLI options can be added here
 }
 
@@ -168,12 +170,53 @@ const OPTIONS: GlobalOptions = {
 };
 
 /**
+ * Build version-specific URLs based on pfVersion option
+ *
+ * @param pfVersion - PatternFly major version (4, 5, or 6)
+ * @returns Object containing all version-specific URLs
+ */
+const buildVersionUrls = (pfVersion: string = '6') => {
+  const config = getVersionConfig(pfVersion);
+
+  const PF_EXTERNAL = config.baseUrl;
+  const PF_EXTERNAL_DESIGN = `${PF_EXTERNAL}/design-guidelines`;
+  const PF_EXTERNAL_DESIGN_COMPONENTS = `${PF_EXTERNAL_DESIGN}/components`;
+  const PF_EXTERNAL_DESIGN_LAYOUTS = `${PF_EXTERNAL_DESIGN}/layouts`;
+  const PF_EXTERNAL_ACCESSIBILITY = `${PF_EXTERNAL}/accessibility`;
+  const PF_EXTERNAL_CHARTS = config.chartsUrl;
+  const PF_EXTERNAL_CHARTS_COMPONENTS = `${PF_EXTERNAL_CHARTS}/victory/components`;
+  const PF_EXTERNAL_CHARTS_DESIGN = `${PF_EXTERNAL_CHARTS}/charts`;
+
+  return {
+    pfExternal: PF_EXTERNAL,
+    pfExternalCharts: PF_EXTERNAL_CHARTS,
+    pfExternalChartsComponents: PF_EXTERNAL_CHARTS_COMPONENTS,
+    pfExternalChartsDesign: PF_EXTERNAL_CHARTS_DESIGN,
+    pfExternalDesign: PF_EXTERNAL_DESIGN,
+    pfExternalDesignComponents: PF_EXTERNAL_DESIGN_COMPONENTS,
+    pfExternalDesignLayouts: PF_EXTERNAL_DESIGN_LAYOUTS,
+    pfExternalAccessibility: PF_EXTERNAL_ACCESSIBILITY
+  };
+};
+
+/**
  * Parse CLI arguments and return CLI options
  */
-const parseCliOptions = (): CliOptions => ({
-  docsHost: process.argv.includes('--docs-host')
-  // Future CLI options can be added here
-});
+const parseCliOptions = (): CliOptions => {
+  const versionIndex = process.argv.indexOf('--pf-version');
+  const pfVersion = versionIndex !== -1 && process.argv[versionIndex + 1] ? process.argv[versionIndex + 1] : undefined;
+
+  const options: CliOptions = {
+    docsHost: process.argv.includes('--docs-host')
+    // Future CLI options can be added here
+  };
+
+  if (pfVersion) {
+    options.pfVersion = pfVersion;
+  }
+
+  return options;
+};
 
 /**
  * Make global options immutable after combining CLI options with app defaults.
@@ -181,8 +224,30 @@ const parseCliOptions = (): CliOptions => ({
  * @param cliOptions
  */
 const freezeOptions = (cliOptions: CliOptions) => {
+  // Validate and default version
+  let pfVersion = cliOptions.pfVersion || '6';
+
+  if (!['4', '5', '6'].includes(pfVersion)) {
+    console.error(
+      `⚠️  Invalid PatternFly version: ${pfVersion}. Supported versions are 4, 5, and 6. Defaulting to version 6.`
+    );
+    pfVersion = '6';
+  }
+
+  // Warn if using non-v6
+  if (pfVersion !== '6') {
+    console.error(
+      `⚠️  Using PatternFly version ${pfVersion} documentation. Some features may differ from the latest version.`
+    );
+  }
+
+  // Build version-specific URLs
+  const versionUrls = buildVersionUrls(pfVersion);
+
   Object.assign(OPTIONS, {
-    ...cliOptions
+    ...cliOptions,
+    pfVersion,
+    ...versionUrls
   });
 
   return Object.freeze(OPTIONS);
@@ -191,6 +256,7 @@ const freezeOptions = (cliOptions: CliOptions) => {
 export {
   parseCliOptions,
   freezeOptions,
+  buildVersionUrls,
   OPTIONS,
   PF_EXTERNAL,
   PF_EXTERNAL_CHARTS,

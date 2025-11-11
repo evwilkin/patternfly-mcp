@@ -117,6 +117,34 @@ npx @patternfly/patternfly-mcp --docs-host
 
 Then, passing a local path such as react-core/6.0.0/llms.txt in urlList will load from llms-files/react-core/6.0.0/llms.txt.
 
+## Version Selection
+
+By default, the server uses PatternFly version 6 documentation. You can specify a different major version using the `--pf-version` flag:
+
+```bash
+# Use PatternFly v6 (default - no flag needed)
+npx @patternfly/patternfly-mcp
+
+# Use PatternFly v5
+npx @patternfly/patternfly-mcp --pf-version 5
+
+# Use PatternFly v4
+npx @patternfly/patternfly-mcp --pf-version 4
+
+# Combine with docs-host mode
+npx @patternfly/patternfly-mcp --docs-host --pf-version 5
+```
+
+**Supported versions:**
+- `--pf-version 6` (default): Latest PatternFly v6 documentation
+- `--pf-version 5`: PatternFly v5 documentation
+- `--pf-version 4`: PatternFly v4 documentation
+
+**Important notes:**
+- When using a non-v6 version, you'll see a one-time warning on server startup
+- If a documentation page doesn't exist for the selected version, you'll receive a graceful error message for that specific page
+- Component availability may vary between versions (some components were added, removed, or renamed in different versions)
+
 ## MCP client configuration examples
 
 Most MCP clients use a JSON configuration to specify how to start this server. The server itself only reads CLI flags and environment variables, not the JSON configuration. Below are examples you can adapt to your MCP client.
@@ -144,6 +172,34 @@ Most MCP clients use a JSON configuration to specify how to start this server. T
       "command": "npx",
       "args": ["-y", "@patternfly/patternfly-mcp@latest", "--docs-host"],
       "description": "PatternFly docs (docs-host mode)"
+    }
+  }
+}
+```
+
+### PatternFly v5 documentation
+
+```json
+{
+  "mcpServers": {
+    "patternfly-docs-v5": {
+      "command": "npx",
+      "args": ["-y", "@patternfly/patternfly-mcp@latest", "--pf-version", "5"],
+      "description": "PatternFly v5 documentation"
+    }
+  }
+}
+```
+
+### PatternFly v4 documentation
+
+```json
+{
+  "mcpServers": {
+    "patternfly-docs-v4": {
+      "command": "npx",
+      "args": ["-y", "@patternfly/patternfly-mcp@latest", "--pf-version", "4"],
+      "description": "PatternFly v4 documentation"
     }
   }
 }

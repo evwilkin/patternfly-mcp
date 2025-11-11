@@ -57,7 +57,7 @@ const usePatternFlyDocsTool = (options = OPTIONS): McpTool => {
         The description of the tool contains links to ${options.docsHost ? 'llms.txt' : '.md'} files or local file paths that the user has made available.
 
         ${options.docsHost
-            ? `[@patternfly/react-core@6.0.0^](${join('react-core', '6.0.0', 'llms.txt')})`
+            ? `[@patternfly/react-core@${options.pfVersion || '6'}.0.0^](${join('react-core', `${options.pfVersion || '6'}.0.0`, 'llms.txt')})`
             : `
             ${COMPONENT_DOCS.join('\n')}
             ${LAYOUT_DOCS.join('\n')}
